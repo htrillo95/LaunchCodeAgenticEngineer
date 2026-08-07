@@ -109,3 +109,21 @@ Students can pull and run the published image directly without building it local
 ```bash
 docker run -it --rm -v claude-auth:/claude-auth -p 8501:8501 -v "$PWD":/workspace us-central1-docker.pkg.dev/hire-human/hire-human-ai/agentic_engineer_1:latest
 ```
+
+## Project Structure
+
+```
+module_1/
+├── Dockerfile              # Container image definition
+├── docker-entrypoint.sh    # Container startup script
+├── requirements.txt        # Python dependencies
+├── settings.json           # Claude Code settings
+├── statusline.sh           # Custom Claude Code status line script
+├── module_x.py             # Business-rule utilities (unit-test example)
+├── module_y.py             # Formatting/reporting utilities (docstring example)
+├── agent_docker_check.md   # Sample Docker review task prompt
+├── CLAUDE.md                # Guidance for Claude Code in this repo
+└── README.md                # This file
+```
+
+`module_x.py` and `module_y.py` are paired examples used in parallel agent-session exercises: `module_x.py` is covered by unit tests without being modified, while `module_y.py`'s public functions are documented with docstrings here.
