@@ -33,4 +33,5 @@
 - None required based on the final measured run.
 
 ### Changes Made
-Pending
+- Fix 1 (summary length): 61165e2 — agent: email-summarize v0.1.1
+- Fix 2 (slack ts logging): ce5e0be — agent: email-summarize v0.1.2
