@@ -51,3 +51,37 @@ During the final consistency pass, Claude identified missed first-use bolding in
 - Context boundaries context usage: 6%
 
 Both runs achieved the same rubric score and showed no significant context drift. The context-boundary run demonstrated that explicit phase preambles kept the current rule set clear when requirements changed, although the baseline run was already successful.
+
+## Summarization Run
+
+- Session: Fresh Claude Code session continued from verified /summarize-session output
+- Messages completed: 8/8
+- Context usage at end: 6%
+- Summary verification: One incomplete remaining-work description was reviewed; no unsupported future scope was added
+- Drift observed: No significant context drift observed
+
+### Rubric Scores
+
+- Rule Accuracy: 4/4
+- Task Adherence: 4/4
+- Coherence: 4/4
+- Total: 12/12
+
+### Observations
+
+Claude correctly distinguished the original rules from the updated rules after the fresh start. It carried the verified summary forward, applied the 35-word limit, removed the old "In short:" requirement, and applied the new opening-question rule.
+
+The summary did not introduce an error that affected downstream output. During verification, Claude correctly flagged unsupported future work rather than adding information that had not yet been introduced.
+
+During the final consistency pass, Claude identified and corrected first-use bolding violations. The summarization run therefore completed successfully with no significant context drift.
+
+### Run Comparison
+
+- Unmanaged baseline: 12/12
+- Context boundaries run: 12/12
+- Summarization run: 12/12
+- Baseline context usage: 5%
+- Context boundaries context usage: 6%
+- Summarization fresh-session context usage: 6%
+
+All three approaches achieved the same rubric score. The summarization run showed that a verified summary could carry the task state into a fresh session while preserving the current requirements.
