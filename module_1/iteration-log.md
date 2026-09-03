@@ -85,3 +85,46 @@ During the final consistency pass, Claude identified and corrected first-use bol
 - Summarization fresh-session context usage: 6%
 
 All three approaches achieved the same rubric score. The summarization run showed that a verified summary could carry the task state into a fresh session while preserving the current requirements.
+
+## Compaction Run
+
+- Session: Fresh Claude Code session with manual compaction
+- Messages completed: 8/8
+- Context before compaction: 9%
+- Context after compaction: 0%
+- Course target before compaction: 50% not reached; artificial context filling was impractical with the available context window
+- Final context usage: 9%
+- Drift observed: No significant context drift observed
+
+### Compaction Probes
+
+- Probe 1 — Original Task: Fully correct
+- Probe 2 — Current File State: Fully correct
+- Probe 3 — Rules Still in Effect: Fully correct
+- Probe 4 — Work Remaining: Fully correct
+
+### Rubric Scores
+
+- Rule Accuracy: 4/4
+- Task Adherence: 4/4
+- Coherence: 4/4
+- Total: 12/12
+
+### Observations
+
+Manual compaction reduced context usage from 9% to 0%. The course target of at least 50% could not be reached practically; several large artificial-context prompts only increased usage to 9%.
+
+After compaction, Claude correctly recalled the original task, all seven original style rules, the edited Introduction text, the unchanged rule state, and the remaining work.
+
+After Message 4 introduced new requirements, Claude correctly replaced the 25-word limit with 35 words, removed the "In short:" requirement, and applied the opening-question rule. It did not restore superseded rules.
+
+During the final consistency pass, Claude identified and corrected first-use technical-term bolding violations. No behavioral errors attributable to compaction were observed.
+
+### Run Comparison
+
+- Unmanaged baseline: 12/12
+- Context boundaries run: 12/12
+- Summarization run: 12/12
+- Compaction run: 12/12
+
+In this test, all four approaches achieved the same rubric score. Manual compaction preserved all information tested by the four probes, although the session was compacted at only 9% because reaching the course's 50% target was impractical with the available context window.
