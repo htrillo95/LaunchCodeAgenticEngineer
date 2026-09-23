@@ -22,3 +22,12 @@
 - Ceiling check: Reviewer internal-cost lookup should not return `cost-breakdown.md`.
 - Audit check: `write_entry` records should exist for Planner, Implementer, and Reviewer with `calling_role` populated.
 - Status: ready to verify in the course harness.
+
+## Run 0 — Tool-scope verification (pre-run check)
+
+- Date: 2026-09-22
+- Role tested: implementer
+- Tool attempted: `mcp__coursetools__task_tracker`
+- Expected: denied (`task_tracker` is owned by project-manager)
+- Result: denied at the harness allow-list layer. The tool was not exposed in the implementer subagent's tool set, so the implementer could not invoke it.
+- Conclusion: the denial is enforced, not merely declared. The implementer's explicit tool allow-list prevents access to `task_tracker`.
