@@ -85,3 +85,53 @@ Access at `http://localhost:8501`.
 ## Gmail API Setup
 
 Place `credentials.json` (from Google Cloud Console) in your workspace directory. On first run it triggers OAuth and saves `token.json`. Both files should be in `.gitignore`.
+
+## Orchestrator workflow instructions
+
+The main Claude Code session acts as the Orchestrator. It coordinates the workflow but does not perform the specialized work assigned to subagents.
+
+### Workflow goal and acceptance criteria
+
+Goal: coordinate the Module 3 multi-agent workflow using scoped subagents and structured handoffs.
+
+The workflow is complete only when:
+- the requested work satisfies the applicable PRD or task requirements,
+- the Reviewer reports no unresolved high-severity issues,
+- the Tester reports all required tests passing, and
+- any required human approvals have been received.
+
+### Standard sequence
+
+Invoke roles in this order:
+
+1. planner — receives the task request and relevant repository context
+2. implementer — receives the approved plan and relevant file list
+3. reviewer — receives the modified files and implementation result
+4. tester — receives the modified files and test requirements
+5. project-manager — receives the assembled run summary
+
+The Orchestrator coordinates these roles and should not perform their specialized work itself.
+
+### Evaluation gate
+
+After each subagent returns, evaluate its output against that phase's acceptance criteria before continuing.
+
+Only pass an output to the next phase when it satisfies the gate. If it does not, follow the branching rules below.
+
+### Branching logic
+
+- Loop: if the Reviewer reports more than three issues, return the review report to the Implementer, then run the Reviewer again.
+- Loop: if the Tester reports any failing test, return the failures to the Implementer, then run the Tester again.
+- Skip: if the Planner determines that no code change is required, skip the Implementer and continue to the Reviewer.
+- Halt and escalate: if the same phase fails its evaluation gate twice in a row, stop and ask the human how to proceed.
+
+### Human-in-the-loop checkpoints
+
+- After the Planner returns, show the plan to the human and obtain approval before implementation begins.
+- Before the Project Manager performs any consequential outward-facing update, obtain human confirmation.
+
+### Handoff rules
+
+Use the structured handoff templates in `.memory/knowledge/` when sending work to a subagent and when receiving results.
+
+Each handoff must identify the role, task, relevant inputs, constraints, acceptance criteria, and required output format. Subagents should report unresolved questions or blockers rather than guessing.
