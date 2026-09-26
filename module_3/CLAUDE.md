@@ -108,7 +108,7 @@ Invoke roles in this order:
 2. implementer — receives the approved plan and relevant file list
 3. reviewer — receives the modified files and implementation result
 4. tester — receives the modified files and test requirements
-5. project-manager — receives the assembled run summary
+5. project-manager — receives the assembled run summary and an existing ticket ID; if no ticket exists, the handoff must explicitly instruct the project-manager to create one before updating it
 
 The Orchestrator coordinates these roles and should not perform their specialized work itself.
 
