@@ -14,7 +14,7 @@ Build and run locally:
 ```bash
 cd module_3
 docker build -t agentic_engineer_3 .
-docker run -it --rm \
+docker run -it --rm --network agent-internal \
   -p 8501:8501 -p 8502:8502 \
   -p 6274:6274 -p 3000:3000 \
   -p 8001:8001 -p 8002:8002 \
@@ -29,7 +29,7 @@ docker run -it --rm \
 Or pull the pre-built image from DockerHub:
 
 ```bash
-docker run -it --rm \
+docker run -it --rm --network agent-internal \
   -p 8501:8501 -p 8502:8502 \
   -p 6274:6274 -p 3000:3000 \
   -p 8001:8001 -p 8002:8002 \
@@ -44,7 +44,7 @@ docker run -it --rm \
 Full setup with Slack and Gmail (reads credentials from your shell environment):
 
 ```bash
-docker run -it --rm \
+docker run -it --rm --network agent-internal \
   -p 8501:8501 -p 8502:8502 \
   -p 6274:6274 -p 3000:3000 \
   -p 8001:8001 -p 8002:8002 \
@@ -57,6 +57,8 @@ docker run -it --rm \
   -v "$HOME/.gmail-mcp":/root/.gmail-mcp \
   us-central1-docker.pkg.dev/hire-human/hire-human-ai/agentic_engineer_3:latest
 ```
+
+The `agent-internal` Docker network isolates the working container from external internet access while still allowing localhost services inside the container to communicate. This keeps agent execution constrained while preserving access to locally hosted MCP and test services.
 
 Place `credentials.json` (from Google Cloud Console) in `$PWD` before running. The Gmail MCP will trigger OAuth on first use and persist the token in `~/.gmail-mcp/`.
 
@@ -80,7 +82,7 @@ docker build --no-cache -t agentic_engineer_3 .
 
 ```bash
 # macOS / Linux
-docker run -it --rm \
+docker run -it --rm --network agent-internal \
   -p 8501:8501 -p 8502:8502 \
   -p 6274:6274 -p 3000:3000 \
   -p 8001:8001 -p 8002:8002 \
@@ -92,7 +94,7 @@ docker run -it --rm \
   agentic_engineer_3
 
 # Windows (PowerShell)
-docker run -it --rm `
+docker run -it --rm --network agent-internal `
   -p 8501:8501 -p 8502:8502 `
   -p 6274:6274 -p 3000:3000 `
   -p 8001:8001 -p 8002:8002 `
@@ -132,7 +134,7 @@ docker exec -it <container_id_or_name> /bin/bash
 ### Without a local workspace
 
 ```bash
-docker run -it --rm \
+docker run -it --rm --network agent-internal \
   -p 8501:8501 \
   -p 6274:6274 -p 3000:3000 \
   -p 8001:8001 -p 8002:8002 \
@@ -181,7 +183,7 @@ MCP (Model Context Protocol) servers extend Claude Code so that prompts can take
 5. On first use, the MCP server will open an OAuth flow and save a token. To persist the token across container restarts, mount the credentials directory:
 
 ```bash
-docker run -it --rm \
+docker run -it --rm --network agent-internal \
   -p 8501:8501 \
   -p 6274:6274 -p 3000:3000 \
   -p 8001:8001 -p 8002:8002 \
@@ -398,7 +400,7 @@ Images are built and published automatically by a GitHub Action whenever the mai
 Once published, students can run the image directly without cloning the repo or building anything:
 
 ```bash
-docker run -it --rm \
+docker run -it --rm --network agent-internal \
   -p 8501:8501 -p 8502:8502 \
   -p 6274:6274 -p 3000:3000 \
   -p 8001:8001 -p 8002:8002 \
