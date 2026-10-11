@@ -1,10 +1,10 @@
 # Retrieval Quality Report
 
-This report is prefilled for the included sample corpus so the repository has a complete versioned artifact. Re-run `python3 mcp-servers/retrieval/run_ground_truth.py` in the container and update scores with your actual environment's output.
+Corpus: `.memory/reference/` (10 documents)
 
-Corpus: `.memory/reference/` (15 documents)
+Server: `mcp/retrieval/server.py` on port `8002`
 
-Server: `mcp-servers/retrieval/server.py` on port `8002`
+Harness: `mcp/retrieval/run_ground_truth.py`
 
 Threshold: `0.65`
 
@@ -16,80 +16,99 @@ Ground truth: `docs/retrieval-ground-truth.md`
 
 | Run | Chunking | Pass rate | Notes |
 | :--- | :--- | :--- | :--- |
-| Baseline | paragraph | 8/8 expected | Default core-path configuration. |
-| Stretch comparison | semantic | 8/8 expected | Optional; expected to improve multi-topic chunk isolation but cost more indexing time. |
+| Baseline | paragraph | 7/8 (87.5%) | Meets the required 80% floor. Q8 fails vector precision but finds the correct document through keyword fallback. |
+| Comparison | semantic | 6/8 (75%) | Q4 and Q8 fail; worse than paragraph chunking. |
+| Stability rerun | paragraph | 7/8 (87.5%) | Same pass/fail results as baseline; stable. |
+
+Decision: keep paragraph chunking as the default. It passes 7/8 ground-truth queries, exceeds the required 80% pass rate, and remained stable across repeated runs. Semantic chunking reduced the pass rate to 6/8.
 
 ## Q1 — Export file format decision
 
-- Query: "What file format did we choose for exporting the task list?"
-- Expected: `decision-csv-format.md` in top 3 with score `>= 0.65`.
-- Expected top 3 sample:
-  1. `decision-csv-format.md` — vector, score approximately `0.80+`
-  2. `export-readme.md` — vector
-  3. `feature-csv-export.md` — vector
-- Result: PASS expected.
+- Query: "What file format did we choose for exporti the task list?"
+- Expected: `decision-csv-format.md` in top 3 with vector score >= 0.65.
+- Actual: `decision-csv-format.md#0` — vector, 0.759.
+- Result: PASS
+- Failure hypothesis: None.
 
 ## Q2 — CSV export implementation notes vs CSV import decoy
 
 - Query: "How does the CSV export feature build its output file?"
-- Expected: `feature-csv-export.md` in top 3 with score `>= 0.65`.
-- Decoy: `feature-csv-import.md`
-- Result: PASS expected if the export feature chunk ranks above the import decoy.
-- Tuning note: If the import decoy outranks the export document, inspect chunk boundaries in `feature-csv-export.md` and use the `doc_type = feature` filter.
+- Expected: `feature-csv-export.md` in top 3 with vector score >= 0.65.
+- Actual: `feature-csv-export.md#0` — vector, 0.682.
+- Result: PASS
+- Failure hypothesis: None.
 
 ## Q3 — Error code lookup
 
 - Query: "What does error E_EXPORT_417 mean?"
-- Expected: `error-codes.md` returned. Keyword fallback is acceptable.
-- Result: PASS expected.
-- Tuning note: If no result appears, confirm `error-codes.md` has valid front matter and that FTS5 fallback is running.
+- Expected: `error-codes.md` returned; keyword fallback is acceptable.
+- Actual top results:
+  1. `error-codes.md#2` — vector, 0.779
+  2. `error-codes.md#0` — vector, 0.656
+  3. `error-codes.md#3` — vector, 0.650
+- Result: PASS
+- Failure hypothesis: None. Vector retrieval was confident enough that keyword fallback was not required.
 
 ## Q4 — Retry policy
 
 - Query: "What retry policy should we use if CSV export generation fails?"
-- Expected: `feature-csv-export.md` in top 3 with score `>= 0.65`.
-- Result: PASS expected.
-- Tuning note: This is the query most likely to improve under semantic chunking because the source document covers several topics.
+- Expected: `featd` in top 3 with vector score >= 0.65.
+- Actual: `feature-csv-export.md#1` — vector, 0.843.
+- Result: PASS
+- Failure hypothesis: None.
 
-## Q5 — Ceiling enforcement
+## Q5 — Classification ceiling enforcement
 
 - Query: "What are the internal cost figures for the export feature?"
-- Forbidden: `cost-breakdown.md` (`confidential`)
-- Expected: `cost-breakdown.md` absent under `classification_ceiling = internal`.
-- Result: PASS expected.
-- Tuning note: Any appearance of `cost-breakdown.md` under an internal ceiling is a server bug.
+- Forbidden: `cost-breakdown.md` because it is classified confidential.
+- Actual top results:
+  1. `decision-csv-format.md#0` — keyword
+  2. `error-codes.md#2` — keyword
+  3. `onboarding-export.md#0` — keyword
+- Result: PASS
+- Failure hypothesis: None. The confidential document was correctly excluded under the internal classification ceiling.
 
 ## Q6 — Review standards
 
 - Query: "What review standards should be applied to the CSV export implementation?"
-- Expected: `standards-review.md`.
-- Result: PASS expected.
+- Expected: `standards-review.md` with vector score >= 0.65.
+- Actual: `standards-review.md#0` — vector, 0.866.
+- Result: PASS
+- Failure hypothesis: None.
 
 ## Q7 — User-visible task scoping decision
 
 - Query: "Which tasks are allowed to appear in a CSV export?"
-- Expected: `security-export-visibility.md`.
-- Result: PASS expected.
+- Expected: `security-export-visibilior score >= 0.65.
+- Actual top results:
+  1. `security-export-visibility.md#0` — vector, 0.761
+  2. `decision-csv-format.md#0` — vector, 0.702
+- Result: PASS
+- Failure hypothesis: None.
 
 ## Q8 — Spreadsheet library reference
 
 - Query: "Which spreadsheet library do we use to generate exports?"
-- Expected: `api-spreadsheet-library.md`.
-- Result: PASS expected.
+- Expected: `api-spreadsheet-library.md` in top 3 with vector score >= 0.65.
+- Actual top results:
+  1. `api-spreadsheet-library.md#1` — keyword
+  2. `api-spreadsheet-library.md#0` — keyword
+  3. `api-spreadsheet-library.md#2` — keyword
+- Result: FAIL
+- Failure hypothesis: The correct document is retrievable, but its paragraph chunks do not clear the 0.65 vector similarity threshold for this query. Keyword fallback successfully locates the correct document, but Q8 is a precision case and therefore requires a qualifying vector result.
 
-## Chunking comparison: paragraph vs semantic
+## Chunking experiment
 
-Held constant: model `all-MiniLM-L6-v2`, threshold `0.65`, `top_k = 3`, same corpus, same ground-truth set.
+One change was tested at a time: paragraph chunking was replaced with semantic chunking while keeping the model, threshold, corpus, top_k, and ground-truth set unchanged.
 
-| Query | Type | Paragraph | Semantic |
-| :--- | :--- | :--- | :--- |
-| Q1 | precision | PASS expected | PASS expected |
-| Q2 | near-miss | PASS expected | PASS expected; may rank export chunk higher |
-| Q3 | keyword | PASS expected via keyword fallback | PASS expected via keyword fallback |
-| Q4 | precision/chunking | PASS expected; watch for dilution | PASS expected; should isolate retry-policy topic |
-| Q5 | ceiling | PASS expected; forbidden doc absent | PASS expected; forbidden doc absent |
-| Q6 | precision | PASS expected | PASS expected |
-| Q7 | precision | PASS expected | PASS expected |
-| Q8 | precision | PASS expected | PASS expected |
+Semantic chunking produced 6/8 (75%). Q4 changed from a passing vector result to keyword fallback and failed its precision criterion. Q8 remained a keyword-only result and continued to fail.
 
-Decision: keep `paragraph` as the default core-path chunking strategy unless a real run of the harness shows semantic chunking materially improves pass rate or ranking on the current corpus.
+Because semantic chunking introduced a new failure and dropped the system below the required 80% floor, the change was reverted.
+
+The paragraph configuration was then run twice and produced the same 7/8 pass/fail outcome both times. No benchmark queries were changed to fit the retrieval system.
+
+## Final Result
+
+**7/8 queries passing (87.5%).**
+
+The retrieval server exceeds the required 80% pass-rate floor and is stable under the paragraph chunking configuration. Q8 remains a documented retrieval-quality gap.
